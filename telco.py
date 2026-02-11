@@ -60,7 +60,7 @@ sns.barplot(data=churn_general, x='Churn Label', y='quantity', hue='Churn Label'
 plt.title("General distribution of Churn")
 plt.ylabel("Number of customer")
 plt.xlabel("")
-plt.savefig("churn_general.png", bbox_inches='tight')
+plt.savefig("images/churn_general.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
@@ -78,7 +78,7 @@ tech_churn = pd.read_sql_query("""
 sns.barplot(data=tech_churn, x='Tech Support', y='churn_rate')
 plt.title("Churn Rate by Tech Support")
 plt.ylabel("Churn (%)")
-plt.savefig("churn_tech_support.png", bbox_inches='tight')
+plt.savefig("images/churn_tech_support.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
@@ -96,7 +96,7 @@ contract_churn = pd.read_sql_query("""
 sns.barplot(data=contract_churn, x='Contract', y='churn_rate')
 plt.title("Churn Rate by Contract Type")
 plt.ylabel("Churn (%)")
-plt.savefig("churn_contract.png", bbox_inches='tight')
+plt.savefig("images/churn_contract.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
@@ -113,7 +113,7 @@ contract_tech = pd.read_sql_query("""
 sns.barplot(data=contract_tech, x='Contract', y='churn_rate', hue='Tech Support')
 plt.title("Churn Rate by Contract and Tech Support")
 plt.ylabel("Churn (%)")
-plt.savefig("churn_contract_tech.png", bbox_inches='tight')
+plt.savefig("images/churn_contract_tech.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
