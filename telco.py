@@ -2,52 +2,56 @@ import pandas as pd
 import sqlite3
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, roc_auc_score
 
-# --- VISUAL CONFIGURATION ---
+# =========================
+# CONFIGURACIÓN VISUAL
+# =========================
 sns.set_theme(style="whitegrid")
 plt.rcParams['figure.figsize'] = (8, 5)
 
-# --- BUSINESS QUESTION ---
-# 1. What percentage of customers are churning?
-# 2. Which type of customers are driving churn?
-# 3. Where should the company focus retention efforts?
+# =========================
+# PREGUNTAS DE NEGOCIO
+# =========================
+# 1. ¿Cuál es la tasa de abandono actual de la empresa?
+# 2. ¿Qué servicios o condiciones contractuales están más correlacionados con la pérdida de clientes?
+# 3. ¿La falta de soporte técnico es un detonante de abandono, especialmente en contratos de corto plazo?
 
-# --- LOAD DATA ---
+# =========================
+# CARGA DE DATOS
+# =========================
 df = pd.read_excel("Telco_customer_churn.xlsx")
 
-# Quick checks
-# print(df.shape)
-# print(df.info())
-# print(df.describe())
-# print(df.isna().sum())
-# print(df.duplicated().sum())
-# print(df.dtypes)
+# =========================
+# COMPROBACIONES RAPIDAS
+# =========================
+print(df.shape)
+print(df.info())
+print(df.describe())
+print(df.isna().sum())
+print(df.duplicated().sum())
+print(df.dtypes)
 
-# --- BASIC CLEANING ---
+# =========================
+# LIMPIEZA DE DATOS
+# =========================
 clean_data = df.copy()
 clean_data['Total Charges'] = pd.to_numeric(clean_data['Total Charges'], errors='coerce')
 clean_data = clean_data.drop(columns=['Count'])
 
-# --- SAVE TO DATABASE ---
+# =========================
+# GUARDAR EN BASE DE DATOS (SQL)
+# =========================
 conn = sqlite3.connect("telco.db")
 clean_data.to_sql("telco_clean", conn, if_exists="replace", index=False)
 
+# =========================
+# ANÁLISIS EXPLORATORIO
+# =========================
 
-# --- EDA (EXPLORATORY DATA ANALYSIS) ---
-
-
-# --- METHODOLOGY ---
-# Step 1: Measure overall churn
-# Step 2: Analyze churn across key dimensions:
-#         - Contract type
-#         - Tech Support
-#         - Tenure
-# Step 3: Examine interaction effects
-# Step 4: Define and quantify the highest risk segment
-
-# --- STEP 1 – OVERALL CHURN ---
-
-# --- CHURN GENERAL ---
+# Churn general
 churn_general = pd.read_sql_query("""
     SELECT 
         "Churn Label",
@@ -57,16 +61,14 @@ churn_general = pd.read_sql_query("""
 """, conn)
 
 sns.barplot(data=churn_general, x='Churn Label', y='quantity', hue='Churn Label')
-plt.title("General distribution of Churn")
-plt.ylabel("Number of customer")
+plt.title("Distribución general de churn")
+plt.ylabel("Cantidad de clientes")
 plt.xlabel("")
-plt.savefig("images/churn_general.png", bbox_inches='tight')
+plt.savefig("churn_general.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
-# --- STEP 2 – CHURN BY KEY DIMENSIONS ---
-
-# CHURN BY TECH SUPPORT
+# Churn por soporte técnico
 tech_churn = pd.read_sql_query("""
     SELECT 
         ROUND(100.0 * SUM("Churn Value") / COUNT(*), 2) AS churn_rate,
@@ -76,15 +78,13 @@ tech_churn = pd.read_sql_query("""
 """, conn)
 
 sns.barplot(data=tech_churn, x='Tech Support', y='churn_rate')
-plt.title("Churn Rate by Tech Support")
+plt.title("Churn por soporte técnico")
 plt.ylabel("Churn (%)")
-plt.savefig("images/churn_tech_support.png", bbox_inches='tight')
+plt.savefig("churn_tech_support.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
-# --- STEP 3 – INTERACTION EFFECTS ---
-
-# CHURN BY CONTRACT
+# Churn por contrato
 contract_churn = pd.read_sql_query("""
     SELECT 
         ROUND(100.0 * SUM("Churn Value") / COUNT(*), 2) AS churn_rate,
@@ -94,13 +94,13 @@ contract_churn = pd.read_sql_query("""
 """, conn)
 
 sns.barplot(data=contract_churn, x='Contract', y='churn_rate')
-plt.title("Churn Rate by Contract Type")
+plt.title("Churn por tipo de contrato")
 plt.ylabel("Churn (%)")
-plt.savefig("images/churn_contract.png", bbox_inches='tight')
+plt.savefig("churn_contract.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
-# CONTRACT BY TECH SUPPORT
+# Churn por contrato y soporte técnico
 contract_tech = pd.read_sql_query("""
     SELECT 
         ROUND(100.0 * SUM("Churn Value") / COUNT(*), 2) AS churn_rate,
@@ -111,13 +111,13 @@ contract_tech = pd.read_sql_query("""
 """, conn)
 
 sns.barplot(data=contract_tech, x='Contract', y='churn_rate', hue='Tech Support')
-plt.title("Churn Rate by Contract and Tech Support")
+plt.title("Churn por tipo de contrato y soporte técnico")
 plt.ylabel("Churn (%)")
-plt.savefig("images/churn_contract_tech.png", bbox_inches='tight')
+plt.savefig("churn_contract_tech.png", bbox_inches='tight')
 plt.show()
 plt.close()
 
-# CHURN BY TENURE
+# Churn por antigüedad
 tenure_churn = pd.read_sql_query("""
     SELECT 
         ROUND(100.0 * SUM("Churn Value") / COUNT(*), 2) AS churn_rate,
@@ -127,11 +127,14 @@ tenure_churn = pd.read_sql_query("""
 """, conn)
 
 sns.lineplot(data=tenure_churn, x='Tenure Months', y='churn_rate')
-plt.title("Churn Rate by Tenure")
+plt.title("Churn por antigüedad")
 plt.ylabel("Churn (%)")
 plt.show()
 
-churn_gen = pd.read_sql_query("""
+# =========================
+# CHURN GENERAL
+# =========================
+churn_summary = pd.read_sql_query("""
     SELECT 
         COUNT(*) AS total_clients,
         SUM("Churn Value") AS total_churn,
@@ -140,10 +143,11 @@ churn_gen = pd.read_sql_query("""
 """, conn)
 
 print("\n--- CHURN GENERAL ---")
-print(churn_gen)
+print(churn_summary)
 
-# --- STEP 4 – HIGH-RISK SEGMENT ANALYSIS ---
-
+# =========================
+# SEGMENTO DE ALTO RIESGO
+# =========================
 segment_churn_rate = pd.read_sql_query("""
     SELECT 
         COUNT(*) AS segment_clients,
@@ -155,7 +159,7 @@ segment_churn_rate = pd.read_sql_query("""
     AND "Tenure Months" < 5
 """, conn)
 
-print("\n--- SEGMENT CHURN RATE ---")
+print("\n--- SEGMENTO DE ALTO RIESGO ---")
 print(segment_churn_rate)
 
 segment_impact = pd.read_sql_query("""
@@ -171,9 +175,8 @@ segment_impact = pd.read_sql_query("""
     AND "Tenure Months" < 5
 """, conn)
 
-print("\n--- SEGMENT IMPACT ON TOTAL CHURN ---")
+print("\n--- IMPACTO TOTAL DEL SEGMENTO EN RIESGO ---")
 print(segment_impact)
-
 
 segment_size = pd.read_sql_query("""
     SELECT 
@@ -188,29 +191,83 @@ segment_size = pd.read_sql_query("""
     AND "Tenure Months" < 5
 """, conn)
 
-
-print("\n--- SEGMENT SIZE OVER TOTAL CLIENTS ---")
+print("\n--- TAMAÑO DEL SEGMENTO SOBRE EL TOTAL DE CLIENTES ---")
 print(segment_size)
 conn.close()
 
-# --- KEY FINDINGS ---
-# Total churn is 26%
-# Most customers leave in the first 5 months (47–60%)
-# New customers have tenure < 5 months
-# Month-to-month contracts and no tech support make churn higher
+# =========================
+# MODELO PREDICTIVO
+# =========================
+df_ml = clean_data.dropna(subset=['Churn Value'])
 
-# --- BUSINESS INTERPRETATION ---
-# Most leaving customers are new
-# They have no long contract and no support
-# There is a problem keeping new customers
+X = pd.get_dummies(df_ml[["Tech Support", "Contract", "Tenure Months", "Phone Service", "Internet Service", "Monthly Charges"]], drop_first=True)
+y = df_ml["Churn Value"]
 
-# --- RECOMMENDATIONS ---
-# Help new customers more in the first 90 days
-# Encourage annual contracts
-# Give tech support to new customers
-# Watch high-risk customers early
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-# --- LIMITATIONS ---
-# Only shows data (descriptive)
-# We do not know the exact cause
-# No predictive models were used
+model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=10,
+    class_weight={0:1, 1:2},
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+y_pred_proba = model.predict_proba(X_test)[:, 1]
+
+print(classification_report(y_test, y_pred))
+print("ROC AUC:", roc_auc_score(y_test, y_pred_proba))
+
+# =========================
+# PREDICCIÓN Y SEGMENTACIÓN
+# =========================
+# Generamos las variables de entrada 
+X_full = pd.get_dummies(df_ml[["Tech Support", "Contract", "Tenure Months", "Phone Service", "Internet Service", "Monthly Charges"]], drop_first=True)
+
+# Reindexamos para asegurar que el orden y cantidad de columnas coincidan exactamente con el entrenamiento
+X_full = X_full.reindex(columns=X.columns, fill_value=0)
+
+# predict_proba devuelve dos columnas: [prob_quedarse, prob_irse]
+df_ml["prob_churn"] = model.predict_proba(X_full)[:, 1]
+
+# Categorizamos el riesgo basándonos en la probabilidad
+def risk_segment(p):
+    if p > 0.7:
+        return "High Risk"
+    elif p > 0.6:
+        return "Medium Risk"
+    else:
+        return "Low Risk"
+
+df_ml["risk_segment"] = df_ml["prob_churn"].apply(risk_segment)
+
+# Cantidad de clientes en riesgo
+high_risk = df_ml[df_ml["risk_segment"] == "High Risk"]
+
+# =========================
+# IMPACTO ECONÓMICO
+# =========================
+df_ml["Monthly Charges"] = pd.to_numeric(df_ml["Monthly Charges"], errors='coerce')
+df_ml["Monthly Charges"] = df_ml["Monthly Charges"].astype(float)
+
+# Suma de los cargos mensuales de TODOS los clientes en riesgo
+revenue_at_risk = df_ml.loc[
+    df_ml["risk_segment"] == "High Risk", "Monthly Charges"
+].sum()
+
+# =========================
+# IMPORTANCIA DE VARIABLES
+# =========================
+importances = pd.Series(model.feature_importances_, index=X.columns)
+print(importances.sort_values(ascending=False))
+
+# =========================
+# EXPORTACIÓN
+# =========================
+df_final = df_ml.copy()
+df_final.to_csv("telco_dashboard_.csv", index=False, float_format="%.2f")
+
