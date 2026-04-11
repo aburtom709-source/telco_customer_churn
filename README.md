@@ -1,91 +1,168 @@
 # Telco Customer Churn Analysis
 
 ## 📌 Project Overview
-This project analyzes customer churn in a telecom company
+This project studies customer churn in a telecom company.
 
-The goal is to:
-  - Measure overall churn
-  - Identify which customers are most likely to leave
-  - Define the highest-risk segment
-  - Provide business recommendations to reduce churn
+It uses:
+- SQL
+- Data analysis (EDA)
+- Machine Learning
+- Dashboard (Looker Studio)
+
+The goal is:
+- Understand churn
+- Find risky customers
+- Estimate money at risk
+
+---
 
 ## 🎯 Business Questions
-1. What percentage of customers are churning?
-2. Which type of customers are driving churn?
-3. Where should the company focus retention efforts?
+1. What is the churn rate?
+2. Which services or contracts are related to churn?
+3. Does no tech support increase churn in short contracts?
+
+---
 
 ## 🗂 Dataset
-  - Source: Abdallah Wagih Ibrahim
-  - Name: Telco Customer Churn
+- Source: Abdallah Wagih Ibrahim
+- Name: Telco Customer Churn
+
+---
 
 ## 🛠 Methodology
-### Step 1 — Measure Overall Churn
-Calculate the total churn rate and show the distribution
 
-### Step 2 — Analyze Churn by Key Dimensions
-Analyze churn by:
-  - Contract type
-  - Tech Support
-  - Tenure
+### 1. Data Cleaning
+- Converted "Total Charges" to number
+- Removed extra columns
+- Fixed missing values
+- Saved data in SQLite
 
-### Step 3 — Interaction Effects
-Analyze churn by combining:
-  - Contract + Tech Support
-  - Tenure over time
+---
 
-### Step 4 — High-Risk Segment Analysis
-Define and measure the highest-risk group
+### 2. SQL Analysis
+Used SQL to:
+- Calculate churn
+- Group customers
+- Analyze data
 
-Customers with:
-  - Month-to-month contract
-  - No Tech Support
-  - Tenure less than 5 months
+---
 
-Then calculate:
-  - The churn rate of this group
-  - The percentage of total churn
-  - The size of this group compared to all customers
+### 3. Data Analysis (EDA)
+Used Seaborn and Matplotlib.
 
-## 📈 Key Findings
-  - Total churn rate: 26%
-  - Most customers leave in the first 5 months (47–60%)
-  - New customers (tenure < 5 months) are at highest risk
-  - Month-to-month contracts and no tech support increase churn
+Analysis:
+- Total churn
+- Churn by contract
+- Churn by tech support
+- Churn by time (tenure)
+- Churn by payment method
+- Contract + tech support
 
-## 📊 Key Visualizations
+---
+
+### 4. High-Risk Customers
+
+High-risk group:
+- Month-to-month contract
+- No tech support
+- Tenure < 5 months
+
+Measured:
+- Churn rate
+- Impact on total churn
+- Group size
+
+---
+
+## 🤖 Predictive Model
+
+Used Random Forest model.
+
+### Features:
+- Contract
+- Tech Support
+- Tenure
+- Phone Service
+- Internet Service
+- Monthly Charges
+
+### Output:
+- Churn probability
+- Risk level:
+  - High Risk (> 0.7)
+  - Medium Risk (> 0.6)
+  - Low Risk
+
+---
+
+## 📈 Key Results
+
+- Churn rate: 26.5%
+- Many customers leave early
+- High churn in:
+  - Month-to-month contracts
+  - No tech support
+- New customers are high risk
+
+---
+
+## 💰 Business Impact
+
+- High-risk customers: 861
+- Revenue at risk: 69,863
+
+This helps the company focus on retention.
+
+---
+
+## 📊 Dashboard (Looker Studio)
+
+Dashboard shows:
+- Churn KPIs
+- Churn by groups
+- Risk levels
+- Customer predictions
+
+🔗 **View Dashboard:** [Open Dashboard](https://lookerstudio.google.com/s/srYcqN5Pkdw)
+
+---
+
+## 📉 Visualizations
+
 ### Overall Churn
-  ![Overall Churn](images/churn_general.png)
+![Overall Churn](images/churn_general.png)
 
 ### Churn by Contract
-  ![Churn by Contract](images/churn_contract.png)
+![Churn by Contract](images/churn_contract.png)
 
-### Contract and Tech Support
-  ![Contract + Tech Support](images/churn_contract_tech.png)
+### Contract + Tech Support
+![Contract + Tech Support](images/churn_contract_tech.png)
 
-## 💼 Business Interpretation
-Churn is concentrated among new customers without:
-  - Long-term contracts
-  - Technical support
-  - This indicates an early-stage retention problem.
+---
+
+## 💼 Business Insights
+
+- New customers leave more
+- No tech support = more churn
+- Short contracts = more churn
+
+---
 
 ## 🚀 Recommendations
-  - Help new customers in the first 90 days
-  - Promote annual contracts
-  - Offer tech support
-  - Monitor risky customers early
 
-## ⚠ Limitations
-  - Only descriptive analysis
-  - No predictive model
-  - No cause analysis
+- Help new customers (first 90 days)
+- Offer long contracts
+- Give tech support
+- Monitor risky customers
 
-## 🧰 Technologies Used
-  - Python
-  - Pandas
-  - SQLite
-  - Seaborn
-  - Matplotlib
+---
 
-Matplotlib
+## 🧰 Technologies
 
-Seaborn
+- Python
+- Pandas
+- SQLite
+- Scikit-learn
+- Seaborn
+- Matplotlib
+- Looker Studio
